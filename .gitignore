@@ -1,0 +1,96 @@
+# ════════════════════════════════════════════════════════════
+# EcoSensing AI — .gitignore
+# Public GitHub Release Safety Configuration
+# ════════════════════════════════════════════════════════════
+
+# ── Secrets & Credentials (NEVER commit) ─────────────────────
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.pfx
+*.p12
+secrets/
+credentials/
+
+# ── Python ──────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info/
+dist/
+build/
+eggs/
+.eggs/
+sdist/
+wheels/
+pip-wheel-metadata/
+*.spec
+
+# ── Virtual Environments ─────────────────────────────────────
+.venv/
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# ── Matplotlib / Plot Cache ──────────────────────────────────
+.mpl_cache/
+.matplotlib/
+
+# ── Experiment Reports (sensitive data) ──────────────────────
+reports/experiments/*.csv
+reports/experiments/*.xlsx
+
+# ── Hardware / Biometric Data ────────────────────────────────
+known_faces/
+rfid_cards.json
+
+# ── Temporary / Development Scratch ─────────────────────────
+scratch/
+*.tmp
+*.bak
+*.swp
+*.swo
+*~
+
+# ── IDE & Editor ─────────────────────────────────────────────
+.vscode/
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+*.sublime-workspace
+*.sublime-project
+
+# ── OS Files ─────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# ── Testing Artifacts ────────────────────────────────────────
+.pytest_cache/
+.coverage
+htmlcov/
+*.lcov
+.tox/
+nosetests.xml
+coverage.xml
+*.cover
+
+# ── Jupyter ──────────────────────────────────────────────────
+.ipynb_checkpoints/
+*.ipynb
+
+# ── Logs ─────────────────────────────────────────────────────
+*.log
+logs/

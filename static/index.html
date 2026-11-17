@@ -1,0 +1,1316 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>EcoSensing AI — المرصد الجغرافي لبغداد ومختبر الرؤية الحاسوبية | الجامعة التقنية الوسطى</title>
+  <meta name="description" content="منصة EcoSensing AI التنفيذية — المرصد الجغرافي لبغداد: فحص التربة والتشجير الذكي ورادار التلوث، ومختبر الرؤية الحاسوبية الاستشاري. الجامعة التقنية الوسطى — كلية البوليتكنيك."/>
+
+  <!-- MapLibre GL JS v4.7.1 CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"/>
+  <!-- EcoSensing Stylesheet -->
+  <link rel="stylesheet" href="/static/css/style.css"/>
+
+  <style>
+    #baghdadMap { height: 520px; width: 100%; border-radius: 10px; position: relative; }
+    .maplibre-ctrl-attrib { display: none !important; }
+  </style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════════════
+     EXECUTIVE HEADER
+════════════════════════════════════════════════════════════ -->
+<header id="execHeader">
+  <div class="workspace-selector-wrap">
+    <label for="workspaceDropdown" class="workspace-selector-label">اختر المنظومة الفعالة:</label>
+    <select id="workspaceDropdown">
+      <option value="afforestation">1 — المرصد الجغرافي لبغداد: فحص التربة والتشجير الذكي ورادار التلوث المناخي</option>
+      <option value="vision">2 — مختبر الرؤية الحاسوبية الاستشاري لفحص النبات والتربة والثيل</option>
+    </select>
+  </div>
+
+  <div class="live-status-pill" id="liveStatusPill">
+    <span class="status-dot pulse"></span>
+    <span id="statusPillText">الذكاء الاصطناعي: Llama-3.3-70B نشط | السيرفر: متصل</span>
+  </div>
+
+  <div class="header-clock mono" id="headerClock">--:--:--</div>
+</header>
+
+<!-- ════════════════════════════════════════════════════════════
+     MAIN CONTENT
+════════════════════════════════════════════════════════════ -->
+<main id="mainContent">
+
+<!-- ══════════════════════════════════════════════════════════
+     WORKSPACE 1: BAGHDAD GEOGRAPHIC OBSERVATORY
+════════════════════════════════════════════════════════════ -->
+<div id="workspace-afforestation" class="workspace active">
+
+  <!-- Unified Command Center Header Banner -->
+  <div class="unified-cmd-banner">
+    <div class="cmd-banner-title">
+      <span class="cmd-pulse-dot"></span>
+      <span>المرصد الجغرافي الموحد لبغداد: تشخيص التربة، مصادر التلوث، والمعالجة البيئية الشاملة</span>
+    </div>
+    <div class="cmd-banner-sub">
+      منصة التحليل الفيزيائي والجيومكاني متعدد الوكلاء (Agent 1: فحص التربة والتشجير + Agent 2: البحث العلمي المقارن وWHO + Agent 3: تشخيص مصادر التلوث والحلول الهندسية)
+    </div>
+  </div>
+
+  <!-- Unified Real-Time KPI Telemetry Row -->
+  <div class="kpi-row cols-4" id="kpiRowUnified">
+    <div class="kpi-card">
+      <div class="kpi-label">مؤشر جودة الهواء الأوروبي (CAMS AQI)</div>
+      <div class="kpi-value royal" id="kpi-pol-aqi">—</div>
+      <div class="kpi-sub" id="kpi-pol-aqi-sub">مرصد كوبرنيكوس الحي</div>
+      <div class="kpi-badge info mt-8" id="kpi-pol-aqi-badge">
+        <span id="kpi-pol-aqi-status">جاري الاتصال بالقمر الصناعي...</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">الجسيمات الدقيقة والسامة PM2.5 / PM10</div>
+      <div style="display:flex; justify-content:space-between; align-items:baseline;">
+        <div>
+          <span class="kpi-value danger" id="kpi-pol-pm25" style="font-size:18px;">—</span>
+          <span style="font-size:10.5px; color:#64748B;">PM2.5</span>
+        </div>
+        <div>
+          <span class="kpi-value amber" id="kpi-pol-pm10" style="font-size:18px;">—</span>
+          <span style="font-size:10.5px; color:#64748B;">PM10</span>
+        </div>
+      </div>
+      <div class="kpi-sub" id="kpi-pol-pm25-sub">عوادم ديزل وغبار صحراوي (µg/m³)</div>
+      <div class="kpi-badge warn mt-8" id="kpi-pol-pm25-badge">
+        <span id="kpi-pol-pm25-status">المخاطر التنفسية والجسيمات</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">حرارة الهواء والسطح (Air Temp & LST)</div>
+      <div class="kpi-value royal" id="kpi-air-temp">—</div>
+      <div class="kpi-sub" id="kpi-lst-range">LST السطح: — °C</div>
+      <div class="kpi-badge info mt-8" id="kpi-weather-badge">
+        <span class="status-dot pulse"></span>
+        <span id="kpi-weather-source">Open-Meteo API</span>
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">شذوذ الجزيرة الحرارية (UHI Anomaly)</div>
+      <div class="kpi-value danger" id="kpi-pol-uhi">—</div>
+      <div class="kpi-sub" id="kpi-pol-lst">فارق الحرارة عن المحيط الريفي</div>
+      <div class="kpi-badge info mt-8" id="kpi-pol-hazard-badge">
+        <span id="kpi-pol-hazard-status">بروتوكول المعالجة الميدانية</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Map + Side Panel -->
+  <div class="workspace-grid map-right-5">
+
+    <!-- Column 1: Map + Docked 4D Toolbar + Executive Dossier -->
+    <div class="map-column" style="display:flex; flex-direction:column; min-width:0;">
+
+      <!-- Baghdad Map Container Strictly Bounded -->
+      <div class="map-wrapper" style="min-height:520px; position:relative; overflow:hidden;">
+
+        <!-- Layer Switcher -->
+        <div class="map-layer-switcher">
+          <button class="layer-btn active" id="btnLayerSat" onclick="switchMapLayer('satellite', this)">قمر صناعي هجين بالأسماء العربية</button>
+          <button class="layer-btn" id="btnLayerStreets" onclick="switchMapLayer('streets', this)">خريطة شوارع LocationIQ الرسمية</button>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="map-search-bar" id="affSearchBar">
+          <div style="position:relative; flex:1;">
+            <input type="text" id="baghdadSearchInput" class="map-search-input"
+                   placeholder="ابحث في بغداد: الكرادة، المنصور، الجامعة التقنية الوسطى..."
+                   autocomplete="off"/>
+            <div class="map-autocomplete" id="baghdadAutocomplete"></div>
+          </div>
+          <button class="map-search-btn" onclick="runBaghdadSearch()">
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            بحث
+          </button>
+        </div>
+
+        <!-- Map Container (MapLibre GL JS) -->
+        <div id="baghdadMap" class="maplibre-map"></div>
+
+        <!-- Draw Controls Strictly Bounded Inside Map -->
+        <div class="map-draw-controls">
+          <button class="map-ctrl-btn scan-btn" id="scanLandBtn" onclick="runUnifiedInspection()">
+            <svg viewBox="0 0 24 24"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+            فحص الموقع الشامل بالذكاء الاصطناعي
+          </button>
+          <button class="map-ctrl-btn" id="drawPolygonBtn" onclick="toggleDrawMode()">
+            <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+            رسم حدود قطعة الأرض يدوياً
+          </button>
+          <button class="map-ctrl-btn" id="clearSelectionBtn" onclick="clearMapSelection()">
+            <svg viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            مسح التحديد
+          </button>
+        </div>
+
+        <!-- Map Legend Strictly Bounded Inside Map -->
+        <div class="map-legend">
+          <div class="map-legend-title">مفتاح الخريطة التوضيحي</div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#1E3A8A; border: 2px solid #1E3A8A;"></div>
+            <span>حدود القطعة المفحوصة</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#1B4D3E;"></div>
+            <span>السدر البلدي</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#2D5A43;"></div>
+            <span>النيم الهندي</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#B45309;"></div>
+            <span>البونسيانا الملكية</span>
+          </div>
+          <div class="legend-item">
+            <div class="legend-dot" style="background:#65A30D;"></div>
+            <span>الأكاسيا / أنواع متكيفة</span>
+          </div>
+        </div>
+
+        <!-- Loading overlay -->
+        <div class="loading-overlay" id="mapLoadingOverlay">
+          <div style="text-align:center;">
+            <div class="loading-spinner"></div>
+            <div style="margin-top:10px; font-size:12px; color:#64748B;">جاري الفحص الشامل لجميع الوكلاء (Agent 1 + Agent 2 + Agent 3)...</div>
+          </div>
+        </div>
+
+      </div><!-- /map-wrapper -->
+
+      <!-- Dedicated Non-Overlapping Docked 4D Diurnal Simulation Toolbar -->
+      <div id="diurnalSimulationBar" class="diurnal-docked-toolbar">
+        <div class="diurnal-header-row">
+          <button id="btnToggle4D" class="diurnal-btn toggle" onclick="toggle4DSimulation()">
+            تفعيل المحاكاة الفيزيائية رباعية الأبعاد (4D)
+          </button>
+          <div style="font-size:11.5px; color:#94A3B8;">
+            رادار الانبعاثات والانتشار الأدريانيكي اللحظي (CAMS + Open-Meteo)
+          </div>
+          <button id="btnDiagnosePollution" class="diurnal-btn diagnose" onclick="triggerPollutionMitigationDiagnosis()">
+            تشخيص مصادر التلوث وبروتوكول المعالجة الذكي (AI Source & Mitigation)
+          </button>
+        </div>
+        <div class="diurnal-controls" id="diurnalControls" style="display:none;">
+          <div class="diurnal-slider-wrap">
+            <span id="hourLabel" class="hour-label">14:00 - ذروة الإشعاع الحراري وأحمال مولدات الديزل</span>
+            <input type="range" id="hourSlider" min="0" max="23" step="1" value="14" oninput="onHourSliderChange(this.value)" />
+          </div>
+          <button id="btnPlayDiurnal" class="diurnal-btn play" onclick="togglePlayDiurnal()">
+            تشغيل الدورة اليومية
+          </button>
+        </div>
+      </div>
+
+      <!-- Executive Dossier Viewer with 4 Instant Tabs -->
+      <div class="executive-dossier-wrapper">
+        <div id="module1AiTelemetryBadge" class="ai-telemetry-badge mb-10" style="display:none; margin-bottom:10px;"></div>
+        <div class="dossier-tab-bar" id="unifiedDossierTabs">
+          <button class="dossier-tab-btn active" id="tabBtnMitigation" onclick="switchDossierView('mitigation')">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 10v4h2v-4h-2zm0 6v2h2v-2h-2z"/></svg>
+            تشخيص مصادر التلوث والحلول الهندسية
+          </button>
+          <button class="dossier-tab-btn" id="tabBtnSoil" onclick="switchDossierView('soil')">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+            فحص صلاحية التربة والتشجير الموقعي (Agent 1)
+          </button>
+          <button class="dossier-tab-btn" id="tabBtnBenchmark" onclick="switchDossierView('benchmark')">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+            المقارنة المعيارية العالمية وأبحاث WHO (Agent 2)
+          </button>
+          <button class="dossier-tab-btn show-all-btn" id="tabBtnAll" onclick="switchDossierView('all')">
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/></svg>
+            عرض التقرير المتكامل الشامل
+          </button>
+        </div>
+
+        <!-- Dossier Panes Container -->
+        <div class="dossier-panes-container">
+
+          <!-- Pane A: Pollution Mitigation Card (Default Active) -->
+          <div id="dossierPaneMitigation" class="dossier-pane active">
+            <div class="card-25d" id="pollutionMitigationCard">
+              <div class="card-header" style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); color: #fff;">
+                <div class="card-icon amber">
+                  <svg viewBox="0 0 24 24" fill="#F59E0B"><path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 10v4h2v-4h-2zm0 6v2h2v-2h-2z"/></svg>
+                </div>
+                <div style="flex:1;">
+                  <h3 style="color:#F8FAFC; margin:0;">تشخيص مصادر التلوث وبروتوكول المعالجة الهندسية الذكي (Groq LPU)</h3>
+                  <div style="font-size:11px; color:#94A3B8; margin-top:2px;" id="pm-district-badge">الموقع: بغداد</div>
+                </div>
+                <span class="badge-source" id="pm-engine-badge" style="background:rgba(255,255,255,0.1); color:#38BDF8; font-size:10px; padding:3px 8px; border-radius:4px;">Groq LPU</span>
+              </div>
+              <div class="card-body">
+                <!-- 1. Site Typology -->
+                <div class="mitigation-section">
+                  <div class="mitigation-label">طبيعة الموقع وتصنيف البؤرة البيئية (Site Typology):</div>
+                  <div class="site-typology-box" id="pm-typology">—</div>
+                </div>
+
+                <!-- 2. Emission Source Breakdown (Progress Bars) -->
+                <div class="mitigation-section mt-12">
+                  <div class="mitigation-label">تحليل المصادر المسببة للتلوث والحرارة في هذه النقطة (100% Attribution):</div>
+                  <div id="pm-sources-container" class="sources-progress-list mt-8">
+                    <!-- Dynamically populated horizontal progress bars -->
+                  </div>
+                </div>
+
+                <!-- 3. Engineering Mitigation Plan -->
+                <div class="mitigation-section mt-14">
+                  <div class="mitigation-label" style="color:#0284C7;">الحلول الهندسية والتقنية المباشرة (Root-Cause Engineering Remedies):</div>
+                  <ul class="mitigation-bullets mt-6" id="pm-engineering-list">
+                    <!-- Dynamically populated bullet points -->
+                  </ul>
+                </div>
+
+                <!-- 4. Afforestation Feasibility & Strict Placement -->
+                <div class="mitigation-section mt-14">
+                  <div class="mitigation-label" style="color:#059669;">جدوى التشجير الموضعي ونسبة التغطية ومواضع الغرس (Afforestation Feasibility):</div>
+                  <div class="feasibility-card mt-6" id="pm-feasibility-box">
+                    <div class="feasibility-header">
+                      <span id="pm-viable-badge" class="badge-viable">قيد الفحص</span>
+                      <span id="pm-target-pct" style="font-weight:700; color:#0F172A; font-size:12px;">—</span>
+                    </div>
+                    <div class="feasibility-desc mt-6" id="pm-species-placement">—</div>
+                  </div>
+                </div>
+
+                <!-- 5. Projected Impact Metrics -->
+                <div class="mitigation-section mt-14">
+                  <div class="mitigation-label">الجدوى البيئية المتوقعة بعد المعالجة (Projected Impact Metrics):</div>
+                  <div class="impact-metrics-grid mt-8">
+                    <div class="impact-box">
+                      <div class="impact-val" id="pm-impact-lst">—</div>
+                      <div class="impact-lbl">انخفاض الحرارة ΔLST السطحية</div>
+                    </div>
+                    <div class="impact-box">
+                      <div class="impact-val" id="pm-impact-pm">—</div>
+                      <div class="impact-lbl">خفض الجسيمات PM2.5 / PM10 %</div>
+                    </div>
+                    <div class="impact-box">
+                      <div class="impact-val" id="pm-impact-gases">—</div>
+                      <div class="impact-lbl">خفض الغازات NOx / SO2 %</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pane B: Soil Viability & Species Allocation (Agent 1) -->
+          <div id="dossierPaneSoil" class="dossier-pane" style="display:none;">
+            <!-- AI Verdict Panel -->
+            <div class="card-25d">
+              <div class="card-header">
+                <div class="card-icon sage">
+                  <svg viewBox="0 0 24 24" fill="var(--sage)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+                </div>
+                <h3>تحليل صلاحية الموقع وتصنيف التربة (Agent 1)</h3>
+              </div>
+              <div class="card-body" id="verdictPanelBody">
+                <div class="loading-inline">
+                  <div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div>
+                  <span>انقر على الخريطة أو ابحث عن موقع للبدء بالفحص</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Soil Profile & Remediation Card -->
+            <div class="card-25d" id="soilProfileCard" style="display:none;">
+              <div class="card-header">
+                <div class="card-icon royal">
+                  <svg viewBox="0 0 24 24" fill="var(--royal)"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14l-5-5 1.41-1.41L12 14.17l7.59-7.59L21 8l-9 9z"/></svg>
+                </div>
+                <h3>الخواص البيدولوجية للتربة وبروتوكول الاستصلاح</h3>
+              </div>
+              <div class="card-body">
+                <div style="background:var(--surface-sunken); padding:10px 12px; border-radius:8px; border-right:3px solid var(--royal); margin-bottom:10px;">
+                  <div style="font-size:11px; color:var(--text-muted);">تصنيف قطاع التربة:</div>
+                  <div style="font-weight:700; font-size:13px; color:var(--text);" id="soil-type-title">—</div>
+                  <div style="display:flex; gap:12px; margin-top:6px; font-size:11.5px;">
+                    <span>الملوحة: <b id="soil-salinity-val">—</b> dS/m</span>
+                    <span>الحموضة: <b id="soil-ph-val">—</b> pH</span>
+                  </div>
+                </div>
+                <div style="font-size:11.5px; color:var(--text-secondary); line-height:1.55;">
+                  <div style="font-weight:700; color:var(--royal); margin-bottom:4px;">بروتوكول الاستصلاح والتجهيز المسبق:</div>
+                  <div id="soil-remediation-text" style="background:rgba(0,0,0,0.02); padding:8px; border-radius:6px;">—</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tree Allocation Table -->
+            <div class="card-25d" id="treeTableCard" style="display:none;">
+              <div class="card-header">
+                <div class="card-icon sage">
+                  <svg viewBox="0 0 24 24" fill="var(--sage)"><path d="M17 8C8 10 5.9 16.17 3.82 21 5 21 6 18 7 18s2 3 3 3 2-3 3-3 2 3 3 3 2-3 3-3c1 0 2 2.5 3 3l1-1C22 17 20 9 17 8z"/></svg>
+                </div>
+                <h3>توزيع الأنواع الشجرية المتوافقة علمياً مع الموقع</h3>
+              </div>
+              <div class="card-body">
+                <div class="tree-table-wrap">
+                  <table class="tree-table">
+                    <thead>
+                      <tr>
+                        <th>نوع الشجرة</th>
+                        <th>الاسم العلمي</th>
+                        <th>النسبة %</th>
+                        <th>سبب الملاءمة العلمية للتربة والمناخ</th>
+                      </tr>
+                    </thead>
+                    <tbody id="treeTableBody"></tbody>
+                  </table>
+                </div>
+                <div class="chart-wrap mt-12">
+                  <canvas id="treeChart" height="200"></canvas>
+                </div>
+                <div class="exec-report mt-12" id="agronomicExecReport" style="font-size:12px; line-height:1.6; color:var(--text);"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Pane C: Global Research & WHO Benchmark (Agent 2) -->
+          <div id="dossierPaneBenchmark" class="dossier-pane" style="display:none;">
+            <div class="card-25d" id="polBenchmarkCard">
+              <div class="card-header">
+                <div class="card-icon royal">
+                  <svg viewBox="0 0 24 24" fill="var(--royal)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+                </div>
+                <h3>تقرير البحث العلمي الدولي والمعالجة البيئية (Agent 2)</h3>
+              </div>
+              <div class="card-body">
+                <div class="pollution-hero-badge" id="agent2BenchmarkBadge">
+                  بحث بيئي دولي معتمد
+                </div>
+                <div class="pollution-project-title" id="agent2ProjectTitle">
+                  بروتوكول المعالجة البيئية
+                </div>
+
+                <!-- Health Assessment -->
+                <div style="background:#FEF2F2; border-right:3px solid #DC2626; border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:12px;">
+                  <div style="font-size:11px; font-weight:700; color:#991B1B; margin-bottom:4px;">
+                    تقييم المخاطر الصحية والأمراض المستهدفة (WHO):
+                  </div>
+                  <div style="font-size:12px; color:#7F1D1D; line-height:1.55;" id="agent2WhoRiskReport">
+                    جاري تحليل البيانات...
+                  </div>
+                </div>
+
+                <!-- Engineering Specs -->
+                <div style="background:#F0FDF4; border-right:3px solid var(--sage); border-radius:var(--radius-sm); padding:10px 12px; margin-bottom:12px;">
+                  <div style="font-size:11px; font-weight:700; color:var(--sage); margin-bottom:4px;">
+                    مواصفات الحزام الأخضر والبروتوكول الهندسي:
+                  </div>
+                  <div style="font-size:12px; color:var(--text-secondary); line-height:1.55;" id="agent2EngineeringSpecs">
+                    جاري تحديد الأبعاد الهندسية...
+                  </div>
+                  <div style="margin-top:6px; font-size:11px; font-weight:600; color:var(--text-primary);" id="pol-buffer-specs">
+                    —
+                  </div>
+                </div>
+
+                <!-- Target Species -->
+                <div>
+                  <div style="font-size:11px; font-weight:700; color:var(--text-secondary);">
+                    الأنواع النباتية المختارة هندسيا لفلترة الملوثات:
+                  </div>
+                  <div class="species-tags-wrap" id="agent2PlantSpeciesList">
+                    <span class="species-tag">النيم الهندي</span>
+                    <span class="species-tag">الكاليبتوس</span>
+                    <span class="species-tag">السدر البلدي</span>
+                  </div>
+                </div>
+
+                <!-- Expected Impact -->
+                <div class="impact-metrics-row mt-12">
+                  <div class="impact-metric-box">
+                    <div class="impact-metric-val" id="agent2ExpectedPmDrop" style="color:var(--sage);">—</div>
+                    <div class="impact-metric-lbl">خفض الجسيمات المتوقع %</div>
+                  </div>
+                  <div class="impact-metric-box">
+                    <div class="impact-metric-val" id="agent2ExpectedLstDrop" style="color:var(--royal);">—</div>
+                    <div class="impact-metric-lbl">انخفاض حرارة السطح المتوقع °C</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div><!-- /executive-dossier-wrapper -->
+
+    </div><!-- /map-column -->
+
+    <!-- Column 2: Right Side Panel (Live Telemetry Physics & CAMS Monitor) -->
+    <div class="side-panel">
+
+      <!-- Live Weather Strip -->
+      <div class="weather-strip">
+        <div class="weather-strip-title">
+          <span style="color:var(--royal);">●</span> الطقس الحي والفيزياء الميدانية — بغداد
+        </div>
+        <div class="weather-metrics" id="weatherMetrics">
+          <div class="weather-metric"><div class="weather-metric-val" id="wm-air">—</div><div class="weather-metric-label">حرارة الهواء °C</div></div>
+          <div class="weather-metric"><div class="weather-metric-val" id="wm-soil">—</div><div class="weather-metric-label">حرارة التربة °C</div></div>
+          <div class="weather-metric"><div class="weather-metric-val" id="wm-lst">—</div><div class="weather-metric-label">LST السطح °C</div></div>
+          <div class="weather-metric"><div class="weather-metric-val" id="wm-hum">—</div><div class="weather-metric-label">الرطوبة %</div></div>
+          <div class="weather-metric"><div class="weather-metric-val" id="wm-wind">—</div><div class="weather-metric-label">الرياح كم/س</div></div>
+          <div class="weather-metric"><div class="weather-metric-val" id="wm-solar">—</div><div class="weather-metric-label">إشعاع W/m²</div></div>
+        </div>
+        <div style="margin-top:8px; font-size:10px; color:var(--text-muted);" id="wm-dust">حالة الغبار: جاري التحميل...</div>
+      </div>
+
+      <!-- CAMS Satellite Strip -->
+      <div class="weather-strip" style="border-bottom-color: #DC2626; margin-top: 14px;">
+        <div class="weather-strip-title" style="display:flex; justify-content:space-between; align-items:center;">
+          <span><span style="color:#DC2626;">●</span> تيليمترية مرصد كوبرنيكوس الأوروبي (CAMS)</span>
+          <span style="font-size:10px; font-weight:600; color:var(--text-muted);" id="pol-location-label">بغداد</span>
+        </div>
+        <div class="cams-readouts-grid mt-8">
+          <div class="cams-readout-item">
+            <div class="cams-readout-val" id="cams-aqi">—</div>
+            <div class="cams-readout-lbl">مؤشر AQI</div>
+          </div>
+          <div class="cams-readout-item">
+            <div class="cams-readout-val" id="cams-pm25">—</div>
+            <div class="cams-readout-lbl">PM2.5 µg/m³</div>
+          </div>
+          <div class="cams-readout-item">
+            <div class="cams-readout-val" id="cams-pm10">—</div>
+            <div class="cams-readout-lbl">PM10 µg/m³</div>
+          </div>
+          <div class="cams-readout-item">
+            <div class="cams-readout-val" id="cams-no2">—</div>
+            <div class="cams-readout-lbl">NO2 عوادم</div>
+          </div>
+          <div class="cams-readout-item">
+            <div class="cams-readout-val" id="cams-so2">—</div>
+            <div class="cams-readout-lbl">SO2 كبريت</div>
+          </div>
+          <div class="cams-readout-item">
+            <div class="cams-readout-val" id="cams-uhi">—</div>
+            <div class="cams-readout-lbl">شذوذ حراري UHI</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Area & Economic Savings Card -->
+      <div class="card-25d mt-14">
+        <div class="card-header">
+          <div class="card-icon sage">
+            <svg viewBox="0 0 24 24" fill="var(--sage)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+          </div>
+          <h3>المؤشرات الاقتصادية والهيدروليكية</h3>
+        </div>
+        <div class="card-body">
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px;">
+            <span style="color:#64748B;">المساحة المفحوصة:</span>
+            <span style="font-weight:700; color:#0F172A;" id="kpi-area-m2">—</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px;">
+            <span style="color:#64748B;">المساحة بالدونم:</span>
+            <span style="font-weight:700; color:#0F172A;" id="kpi-area-dunum">—</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px;">
+            <span style="color:#64748B;">حالة صلاحية الأرض:</span>
+            <span class="kpi-badge info" id="kpi-suitability-badge"><span>في انتظار الفحص</span></span>
+          </div>
+          <div style="display:flex; justify-content:space-between; margin-bottom:8px; font-size:12px; margin-top:10px; border-top:1px solid #E2E8F0; padding-top:8px;">
+            <span style="color:#64748B;">توفير المياه الأسبوعي:</span>
+            <span style="font-weight:700; color:#059669;" id="kpi-water-saved">—</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:12px;">
+            <span style="color:#64748B;">العائد الاقتصادي السنوي:</span>
+            <span style="font-weight:700; color:#D97706;" id="kpi-savings-iqd">—</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /side-panel -->
+  </div><!-- /workspace-grid -->
+  </div><!-- /workspace-grid -->
+</div><!-- /workspace-afforestation -->
+
+
+<!-- ══════════════════════════════════════════════════════════
+     WORKSPACE 2: UNIVERSAL COMPUTER VISION LAB
+════════════════════════════════════════════════════════════ -->
+<div id="workspace-vision" class="workspace">
+
+  <!-- Telemetry KPI Row -->
+  <div class="kpi-row cols-4">
+    <div class="kpi-card">
+      <div class="kpi-label">نوع العينة والتشخيص الذكي</div>
+      <div class="kpi-value" id="vis-diagnosis" style="font-size:13px; line-height:1.3; color:var(--text);">—</div>
+      <div class="kpi-sub" id="vis-category-badge">Groq Vision LPU Engine</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">مؤشر الحيوية والاخضرار</div>
+      <div class="kpi-value sage" id="vis-exg">—</div>
+      <div class="kpi-sub">Chlorophyll Vitality %</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">مؤشر الإجهاد والجفاف الحراري</div>
+      <div class="kpi-value royal" id="vis-stress">—</div>
+      <div class="kpi-sub">Heat & Drought Stress %</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">مؤشر الغبار وتملح التربة</div>
+      <div class="kpi-value amber" id="vis-dust">—</div>
+      <div class="kpi-sub">Dust & Soil Salinity %</div>
+    </div>
+  </div>
+
+  <!-- ESP32 Capacitive Soil Sentinel & Volumetric Water Content (VWC) Card -->
+  <div class="card-25d mb-16 esp32-sentinel-card" id="esp32SentinelCard">
+    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <div class="card-icon sage">
+          <svg viewBox="0 0 24 24" fill="var(--sage)"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm6 12H6v-1c0-2 4-3.1 6-3.1s6 1.1 6 3.1v1z"/></svg>
+        </div>
+        <div>
+          <h3>حارس التربة الميداني ESP32 — قياس المحتوى الرطوبي الحجمي (VWC) والمستويات الهيدرولوجية</h3>
+          <div style="font-size:11px; color:var(--text-muted); margin-top:1px;">مجس سعوي تناظري متصل لمعايرة طين السهل الرسوبي العراقي</div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <div class="esp32-mode-selector" style="display:flex; gap:4px; background:rgba(0,0,0,0.04); padding:3px; border-radius:6px;">
+          <button id="btnModeOpticalOnly" class="btn-mode-toggle active" onclick="setEsp32Modality('optical')" style="padding:4px 10px; font-size:11px; border-radius:4px; border:none; cursor:pointer; background:var(--royal); color:#fff;">النمط البصري المستقل (كاميرا فقط)</button>
+          <button id="btnModeHybridEsp32" class="btn-mode-toggle" onclick="setEsp32Modality('hybrid')" style="padding:4px 10px; font-size:11px; border-radius:4px; border:none; cursor:pointer; background:transparent; color:var(--text-muted);">النمط الهجين (كاميرا + مجس ESP32)</button>
+        </div>
+        <button id="btnRefreshEsp32" onclick="refreshEsp32StatusManually()" style="display:none; padding:5px 12px; font-size:11px; font-weight:600; border-radius:4px; border:1px solid #10B981; background:#ECFDF5; cursor:pointer; color:#047857;">فحص وتحديث اتصال المجس (Wi-Fi / USB)</button>
+        <div id="esp32StatusBadge" class="esp32-status-badge online" style="background:#F0FDF4; color:#15803D; border:1px solid #BBF7D0;">
+          النمط البصري المستقل نشط - القياس عبر تحليل الطيف اللوني
+        </div>
+        <!-- ESP32 Setup Guide Button -->
+        <button id="btnEsp32SetupGuide" onclick="openEsp32SetupModal()" title="دليل ربط جهاز ESP32 وكيفية التوصيل والمعايرة" style="padding:5px 11px; font-size:11px; font-weight:600; border-radius:4px; border:1px solid #3B82F6; background:#EFF6FF; cursor:pointer; color:#1D4ED8; display:flex; align-items:center; gap:5px;">
+          <svg viewBox="0 0 24 24" fill="currentColor" style="width:14px;height:14px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+          دليل ربط جهاز ESP32 (?)
+        </button>
+      </div>
+    </div>
+    <div class="card-body">
+      <!-- Live Hydrological Status Row -->
+      <div class="esp32-metrics-row mb-12">
+        <div class="esp32-metric-box">
+          <div class="esp32-metric-lbl">المحتوى الرطوبي الحجمي اللحظي VWC</div>
+          <div class="esp32-metric-val" id="esp32LiveVwcVal">— %</div>
+        </div>
+        <div class="esp32-metric-box">
+          <div class="esp32-metric-lbl">الجهد الكهربائي ومستوى ADC</div>
+          <div class="esp32-metric-val" id="esp32VoltageAdcVal" style="font-size:13.5px; color:#1E3A8A;">— V (ADC: —)</div>
+        </div>
+        <div class="esp32-metric-box">
+          <div class="esp32-metric-lbl">الحالة الهيدرولوجية الحقلية للتربة</div>
+          <div class="esp32-metric-val" id="esp32HydrologicalStatus" style="font-size:13.5px; color:#1E3A8A;">النمط البصري نشط</div>
+        </div>
+        <div class="esp32-metric-box">
+          <div class="esp32-metric-lbl">التدرج الرطوبي الرأسي (Vertical Gradient)</div>
+          <div class="esp32-metric-val" id="esp32GradientVal">— %/cm</div>
+        </div>
+      </div>
+
+      <!-- 3-Depth Multi-Point Soil Profiling & Sensor Locking -->
+      <div class="esp32-depths-grid" id="esp32DepthsGrid" style="display:none;">
+        <div class="esp32-depth-box">
+          <div class="esp32-depth-header">
+            <span class="depth-tag">0-10 cm</span>
+            <span class="depth-name">العمق السطحي (تبخر)</span>
+          </div>
+          <div class="esp32-depth-val" id="esp32Depth5Val">— %</div>
+          <button id="btnLockDepth5" class="btn-lock-depth" onclick="lockEsp32Depth('surface_5cm')">
+            تثبيت عمق السطح (5 سم)
+          </button>
+        </div>
+        <div class="esp32-depth-box">
+          <div class="esp32-depth-header">
+            <span class="depth-tag">10-20 cm</span>
+            <span class="depth-name">العمق المتوسط (الرايزوسفير)</span>
+          </div>
+          <div class="esp32-depth-val" id="esp32Depth15Val">— %</div>
+          <button id="btnLockDepth15" class="btn-lock-depth" onclick="lockEsp32Depth('mid_15cm')">
+            تثبيت العمق المتوسط (15 سم)
+          </button>
+        </div>
+        <div class="esp32-depth-box">
+          <div class="esp32-depth-header">
+            <span class="depth-tag">20-30 cm</span>
+            <span class="depth-name">عمق الجذور (مخزون الرطوبة)</span>
+          </div>
+          <div class="esp32-depth-val" id="esp32Depth25Val">— %</div>
+          <button id="btnLockDepth25" class="btn-lock-depth" onclick="lockEsp32Depth('root_25cm')">
+            تثبيت منطقة الجذور (25 سم)
+          </button>
+        </div>
+      </div>
+      <div style="font-size:10.5px; color:var(--text-muted); margin-top:8px; line-height:1.4;">
+        معايرة فيزيائية لطين السهل الرسوبي العراقي (Mesopotamian Clay-Loam): نقطة الذبول الدائم PWP &lt;14% | الإجهاد دون الحرج 14-26% | السعة الحقلية المثلى FC 26-38% | التشبع المائي الغدق &gt;38%.
+      </div>
+      <!-- Scientific Data Provenance & Classification Layer -->
+      <div id="esp32ProvenanceContainer" class="esp32-provenance-container" style="display:none; margin-top:10px; padding:8px 12px; background:rgba(30,58,138,0.03); border:1px solid rgba(30,58,138,0.12); border-radius:6px; font-size:11px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-weight:700; color:#1E3A8A;">تصنيف البيانات العلمي:</span>
+            <span id="esp32ClassificationBadge" style="padding:2px 8px; border-radius:4px; font-weight:600; font-size:10.5px; background:#EFF6FF; color:#1E40AF; border:1px solid #BFDBFE;">—</span>
+          </div>
+          <div id="esp32ProvenanceDetails" style="color:var(--text-muted); font-size:10.5px; display:flex; gap:10px; flex-wrap:wrap;">
+            <!-- Dynamically populated from API response -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Scientific Experiment Logger & Research Export Toolbar -->
+      <div id="esp32ExperimentLoggerBar" style="margin-top:12px; padding:10px 14px; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; display:flex; flex-direction:column; gap:8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span style="font-size:12px; font-weight:700; color:#0F172A;">سجل التجارب البحثية الميدانية (Scientific Experiment Logger):</span>
+            <span id="expRecordingBadge" style="display:none; align-items:center; gap:5px; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700; background:#FEE2E2; color:#B91C1C; border:1px solid #FCA5A5;">
+              <span style="width:7px; height:7px; border-radius:50%; background:#EF4444; display:inline-block; animation:pulse 1.5s infinite;"></span>
+              <span>تسجيل حي نشط</span>
+            </span>
+          </div>
+          <div id="expLogStatus" style="font-size:11.5px; font-weight:600; color:#475569;">
+            مسجل: 0 حزمة
+          </div>
+        </div>
+        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+          <div style="display:flex; align-items:center; gap:6px; flex:1; min-width:240px;">
+            <input type="text" id="expNameInput" placeholder="اسم التجربة (مثال: Soil_Calibration_Run_01)" value="Soil_Calibration_Run_01" style="flex:1; padding:6px 10px; font-size:11.5px; border:1px solid #CBD5E1; border-radius:5px; outline:none; background:#FFFFFF; color:#0F172A;" />
+            <button id="btnToggleExpLog" onclick="toggleExperimentRecording()" style="padding:6px 14px; font-size:11.5px; font-weight:700; border-radius:5px; border:1px solid #0F766E; background:#0F766E; color:#FFFFFF; cursor:pointer; display:inline-flex; align-items:center; gap:5px; transition:all 0.2s;">
+              بدء التسجيل التجريبي
+            </button>
+          </div>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <button id="btnExportExpExcel" onclick="downloadExperimentExcel()" style="padding:6px 12px; font-size:11px; font-weight:700; border-radius:5px; border:1px solid #059669; background:#ECFDF5; color:#047857; cursor:pointer; display:inline-flex; align-items:center; gap:5px; transition:all 0.2s;">
+              تصدير جدول بحث علمي (.XLSX)
+            </button>
+            <button id="btnExportExpCsv" onclick="downloadExperimentCsv()" style="padding:6px 10px; font-size:11px; font-weight:600; border-radius:5px; border:1px solid #94A3B8; background:#FFFFFF; color:#334155; cursor:pointer; transition:all 0.2s;">
+              تصدير خام (.CSV)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scientific Model, Signal-Filter & System Validation Panel -->
+  <div class="card-25d mb-16" id="modelEvaluationCard" style="border:1px solid #E2E8F0; border-radius:8px;">
+    <div class="card-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div class="card-icon sage" style="background:#ECFDF5;">
+          <svg viewBox="0 0 24 24" fill="#047857" width="18" height="18"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>
+        </div>
+        <div>
+          <h3 style="margin:0; font-size:13.5px; font-weight:700; color:#0F172A;">لوحة التحقق وتقييم النماذج (Scientific Model & Filter Evaluation)</h3>
+          <div style="font-size:10.5px; color:var(--text-muted);">قياسات حقيقية 100% مستخرجة ديناميكياً من ملفات التجارب الميدانية ومحركات الفيزياء — خالية من الأرقام الافتراضية</div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span id="evalStatusBadge" style="padding:3px 10px; border-radius:12px; font-size:11px; font-weight:700; background:#F1F5F9; color:#475569; border:1px solid #CBD5E1;">
+          بانتظار التحقق
+        </span>
+        <button id="btnRefreshEvaluation" onclick="fetchEvaluationSummary()" style="padding:4px 10px; font-size:11px; font-weight:600; border-radius:5px; border:1px solid #CBD5E1; background:#FFFFFF; color:#334155; cursor:pointer; display:inline-flex; align-items:center; gap:4px;">
+          <svg viewBox="0 0 24 24" fill="currentColor" width="12" height="12"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/></svg>
+          تحديث التقييم
+        </button>
+      </div>
+    </div>
+    <div class="card-body" style="padding:14px;">
+      <!-- Section 1: Signal-Filtering & Noise Reduction Validation -->
+      <div style="margin-bottom:14px;">
+        <div style="font-size:11.5px; font-weight:700; color:#1E293B; margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+          <span>1. كفاءة معالجة الإشارة وخفض الضوضاء (Signal-Filter & Calibration Validation):</span>
+          <span id="evalTimestamp" style="font-size:10px; color:var(--text-muted); font-weight:normal;"></span>
+        </div>
+
+        <!-- Empty state placeholder when 0 experiments logged -->
+        <div id="evalFilterEmptyState" style="padding:12px; background:#F8FAFC; border:1px dashed #CBD5E1; border-radius:6px; text-align:center; color:#64748B; font-size:11.5px;">
+          بانتظار تسجيل أول تجربة ميدانية لحساب كفاءة الفلتر ديناميكياً (يرجى بدء تجربة من شريط السجل أعلاه، إرسال حزم Wi-Fi أو USB، ثم إيقافها لتوليد نتائج التحقق).
+        </div>
+
+        <!-- Active state grid when experiments exist -->
+        <div id="evalFilterActiveState" style="display:none;">
+          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:10px; margin-bottom:10px;">
+            <div style="background:#ECFDF5; border:1px solid #A7F3D0; border-radius:6px; padding:10px; text-align:center;">
+              <div style="font-size:10.5px; color:#047857; font-weight:700;">كفاءة خفض الضوضاء (Noise Reduction)</div>
+              <div id="evalNoiseRedVal" style="font-size:18px; font-weight:800; color:#065F46; margin:4px 0;">— %</div>
+              <div style="font-size:9.5px; color:#059669;">تخميد التباين عبر فلتر EMA + Trimmed Mean</div>
+            </div>
+            <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:6px; padding:10px; text-align:center;">
+              <div style="font-size:10.5px; color:#475569; font-weight:600;">الانحراف المعياري (Raw vs Filtered SD)</div>
+              <div id="evalStdDevVal" style="font-size:13.5px; font-weight:700; color:#1E293B; margin:6px 0;">—</div>
+              <div style="font-size:9.5px; color:#64748B;">الانحراف الإحصائي الحقيقي s</div>
+            </div>
+            <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:6px; padding:10px; text-align:center;">
+              <div style="font-size:10.5px; color:#475569; font-weight:600;">إجمالي الحزم المقاسة (Sample Size N)</div>
+              <div id="evalSampleCountVal" style="font-size:15px; font-weight:700; color:#1E293B; margin:5px 0;">—</div>
+              <div style="font-size:9.5px; color:#64748B;">عينات مسجلة ومحفوظة محلياً</div>
+            </div>
+            <div style="background:#F8FAFC; border:1px solid #E2E8F0; border-radius:6px; padding:10px; text-align:center;">
+              <div style="font-size:10.5px; color:#475569; font-weight:600;">متوسط رطوبة التربة (Mean VWC)</div>
+              <div id="evalMoistureRangeVal" style="font-size:13.5px; font-weight:700; color:#1E293B; margin:6px 0;">— %</div>
+              <div style="font-size:9.5px; color:#64748B;">المحتوى الرطوبي الحجمي الفعلي</div>
+            </div>
+          </div>
+          <div style="font-size:10.5px; background:rgba(30,58,138,0.03); border:1px solid rgba(30,58,138,0.1); border-radius:5px; padding:6px 10px; color:#334155; display:flex; gap:12px; flex-wrap:wrap;">
+            <span>حالة المعايرة: <b id="evalCalibStatus">—</b></span>
+            <span>|</span>
+            <span>مرجع الجفاف (0%): <b id="evalDryRef">—</b> ADC</span>
+            <span>|</span>
+            <span>مرجع التشبع (100%): <b id="evalWetRef">—</b> ADC</span>
+            <span>|</span>
+            <span>أحدث ملف تجربة: <b id="evalLatestFile">—</b></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Scientific Engines & Model Artifacts Inventory -->
+      <div>
+        <div style="font-size:11.5px; font-weight:700; color:#1E293B; margin-bottom:8px;">
+          2. جاهزية المحركات العلمية ومستودع النماذج (Scientific Engines & Model Artifacts):
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:8px;">
+          <div style="padding:8px 10px; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:5px; font-size:11px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+              <b style="color:#0F172A;">محرك بلوم الحراري 4D</b>
+              <span id="enginePlumeStatus" style="font-size:10px; padding:1px 6px; border-radius:10px; font-weight:700; background:#ECFDF5; color:#047857;">جاهز</span>
+            </div>
+            <div style="color:var(--text-muted); font-size:10px;">نموذج الانتشار الغاوسي اللحظي (0-23h) لمعالم بغداد</div>
+          </div>
+          <div style="padding:8px 10px; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:5px; font-size:11px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+              <b style="color:#0F172A;">محرك معايير WHO 2021</b>
+              <span id="engineWhoStatus" style="font-size:10px; padding:1px 6px; border-radius:10px; font-weight:700; background:#ECFDF5; color:#047857;">نشط</span>
+            </div>
+            <div style="color:var(--text-muted); font-size:10px;">مطابقة حدود 24h لـ PM2.5 (15) و PM10 (45) و NO2 (25)</div>
+          </div>
+          <div style="padding:8px 10px; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:5px; font-size:11px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+              <b style="color:#0F172A;">بوابة مجس التربة ESP32</b>
+              <span id="engineGatewayStatus" style="font-size:10px; padding:1px 6px; border-radius:10px; font-weight:700; background:#EFF6FF; color:#1E40AF;">استعداد</span>
+            </div>
+            <div id="engineGatewayDesc" style="color:var(--text-muted); font-size:10px;">اتصال لاسلكي Wi-Fi مباشر + تحكيم تسلسلي USB</div>
+          </div>
+          <div style="padding:8px 10px; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:5px; font-size:11px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
+              <b style="color:#0F172A;">سجل التجارب وتصدير Excel</b>
+              <span id="engineLoggerStatus" style="font-size:10px; padding:1px 6px; border-radius:10px; font-weight:700; background:#ECFDF5; color:#047857;">جاهز</span>
+            </div>
+            <div style="color:var(--text-muted); font-size:10px;">توليد جداول .XLSX و .CSV بدقة علمية محكمة</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Segmented Mode Switcher (Upload vs Live Camera) -->
+  <div class="vision-mode-switcher mb-16">
+    <button id="tabVisionUpload" class="vision-mode-tab active" onclick="switchVisionMode('upload')">
+      رفع عينة من الجهاز (صورة ثابتة)
+    </button>
+    <button id="tabVisionLiveCamera" class="vision-mode-tab" onclick="switchVisionMode('camera')">
+      المختبر الميداني الحي (كاميرا 1080p 30FPS)
+    </button>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 410px; gap:18px;">
+
+    <div>
+      <!-- TAB 1: Upload Zone Container -->
+      <div id="visionUploadContainer">
+        <div class="card-25d">
+          <div class="card-header">
+            <div class="card-icon sage">
+              <svg viewBox="0 0 24 24" fill="var(--sage)"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg>
+            </div>
+            <h3>تحميل صورة نباتية / شجرية / مسطح ثيل / تربة زراعية (Agent 3)</h3>
+          </div>
+          <div class="card-body">
+            <div class="upload-zone" id="uploadZone">
+              <input type="file" id="leafFileInput" accept="image/*" onchange="handleFileUpload(event)"/>
+              <svg class="upload-icon" width="40" height="40" viewBox="0 0 24 24" fill="#94A3B8">
+                <path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/>
+              </svg>
+              <div class="upload-text">اسحب صورة (ورقة، شجرة، ثيل حدائق، أو تربة) هنا أو انقر للرفع</div>
+              <div class="upload-text muted small mt-8">عزل تلقائي لليد والخلفية وتحليل المشاهد الزراعية عبر Groq Vision</div>
+            </div>
+
+            <!-- Single-Shot Laboratory Diagnostic Action Bar -->
+            <div class="session-action-btns mt-14" style="display:flex; flex-wrap:wrap; gap:8px;">
+              <button id="btnAnalyzeUploadedSample" class="btn-session-action primary" onclick="analyzeSampleAction('NEW_SESSION')">
+                فحص العينة والتحليل المختبري الشامل
+              </button>
+              <button id="btnResetLabSession" class="btn-session-action reset" onclick="resetLabSession()">
+                تصفير الفحص
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: Live 1080p Camera Console Container -->
+      <div id="visionCameraContainer" style="display:none;">
+        <div class="card-25d mb-16">
+          <div class="card-header">
+            <div class="card-icon royal">
+              <svg viewBox="0 0 24 24" fill="var(--royal)"><path d="M12 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zm0 8c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zM9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9z"/></svg>
+            </div>
+            <h3>المختبر الميداني الحي — منصة كاميرا الفحص 1080p (30 FPS)</h3>
+          </div>
+          <div class="card-body">
+            <div class="camera-controls-bar">
+              <select id="cameraDeviceSelect" class="camera-device-select" onchange="onCameraDeviceChanged()">
+                <option value="">اكتشاف الكاميرات المتاحة...</option>
+              </select>
+              <button id="btnSwitchUsbCamera" class="btn-cam usb-switch" onclick="switchPreferredUsbCamera()">
+                تبديل إلى كاميرا USB الخارجية
+              </button>
+              <button id="btnStartCamera" class="btn-cam start" onclick="startCamera()">
+                بدء تشغيل كاميرا الفحص 1080p
+              </button>
+              <button id="btnStopCamera" class="btn-cam stop" onclick="stopCamera()" disabled>
+                إيقاف الكاميرا وإغلاق البث
+              </button>
+              <button id="btnCaptureAnalyze" class="btn-cam capture" onclick="captureAndAnalyze('NEW_SESSION')" disabled>
+                تجميد العينة والتحليل المختبري الشامل
+              </button>
+              <button id="btnResetLabSessionCam" class="btn-cam reset" onclick="resetLabSession()">
+                تصفير الفحص
+              </button>
+            </div>
+
+            <!-- Hidden hardware stream video -->
+            <video id="cameraVideo" playsinline style="display:none;"></video>
+
+            <!-- Real-Time Tri-Spectral Preview Canvases -->
+            <div class="live-tri-spectral-grid mt-12">
+              <div class="live-canvas-box">
+                <div class="live-canvas-badge">البث البصري الحقيقي (1080p RGB + HUD)</div>
+                <canvas id="liveCanvasRgb" width="480" height="270" class="live-canvas"></canvas>
+                <div class="live-canvas-fps" id="liveFpsCounter">0 FPS</div>
+              </div>
+              <div class="live-canvas-box">
+                <div class="live-canvas-badge">المسح الحراري اللحظي (Live Thermal Proxy)</div>
+                <canvas id="liveCanvasThermal" width="480" height="270" class="live-canvas"></canvas>
+              </div>
+              <div class="live-canvas-box">
+                <div class="live-canvas-badge">عزل الكلوروفيل والتربة الحي (Live ExG / Soil Mask)</div>
+                <canvas id="liveCanvasExg" width="480" height="270" class="live-canvas"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3-Panel Vision Display -->
+      <div class="vision-panels" id="visionPanels">
+        <div class="vision-panel">
+          <div class="vision-panel-title">الصورة الأصلية RGB</div>
+          <div class="vision-panel-placeholder" id="panel-original">
+            <img id="originalLeafImg" src="" alt="الصورة الأصلية" style="width:100%;aspect-ratio:1;object-fit:cover;display:none;border-radius:6px;"/>
+            <span id="origPlaceholderText">في انتظار الصورة</span>
+          </div>
+        </div>
+        <div class="vision-panel">
+          <div class="vision-panel-title">خريطة الحرارة الزائفة CLAHE+JET</div>
+          <div class="vision-panel-placeholder" id="panel-thermal">
+            <img id="thermalHeatmapImg" src="" alt="خريطة حرارية" style="width:100%;aspect-ratio:1;object-fit:cover;display:none;border-radius:6px;"/>
+            <span id="thermPlaceholderText">في انتظار التحليل</span>
+          </div>
+        </div>
+        <div class="vision-panel">
+          <div class="vision-panel-title">خريطة الطيف النباتي ExG+VIRIDIS</div>
+          <div class="vision-panel-placeholder" id="panel-spectral">
+            <img id="spectralLeafImg" src="" alt="خريطة طيفية" style="width:100%;aspect-ratio:1;object-fit:cover;display:none;border-radius:6px;"/>
+            <span id="specPlaceholderText">في انتظار التحليل</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Diagnostic Metrics -->
+      <div class="diag-cards" id="diagCards">
+        <div class="diag-card"><div class="diag-label">مؤشر الحيوية الخضراء</div><div class="diag-value" id="d-exg">—</div><div class="diag-unit">Vitality %</div></div>
+        <div class="diag-card"><div class="diag-label">مؤشر الغبار وتملح التربة</div><div class="diag-value" id="d-dust">—</div><div class="diag-unit">Dust / Salt %</div></div>
+        <div class="diag-card"><div class="diag-label">مؤشر الإجهاد الحراري والمائي</div><div class="diag-value" id="d-water">—</div><div class="diag-unit">Stress %</div></div>
+        <div class="diag-card"><div class="diag-label">حرارة السطح المعايرة</div><div class="diag-value" id="d-hotspots">—</div><div class="diag-unit">°C</div></div>
+      </div>
+
+      <!-- Laboratory Certificate UI Card (Part 1 & 2) -->
+      <div class="card-25d mt-18" id="labCertificatePanel">
+        <div class="card-header">
+          <div class="card-icon sage">
+            <svg viewBox="0 0 24 24" fill="var(--sage)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+          </div>
+          <h3>شهادة الفحص المختبري البيئي والزراعي (Groq Vision Lab)</h3>
+        </div>
+        <div class="card-body">
+          <div class="lab-cert-grid">
+            <div class="lab-cert-item full-width">
+              <div class="lab-cert-lbl">التصنيف العلمي والاسم المحلي</div>
+              <div class="lab-cert-val highlight" id="labScientificName"><span id="labCertScientificName">—</span></div>
+              <div class="lab-cert-sub" id="labArabicName">—</div>
+            </div>
+            <div class="lab-cert-item">
+              <div class="lab-cert-lbl">فئة العينة المفحوصة</div>
+              <div class="lab-cert-val" id="labSpecimenCategory">—</div>
+            </div>
+            <div class="lab-cert-item">
+              <div class="lab-cert-lbl">مؤشر الرطوبة السطحية التقديرية</div>
+              <div class="lab-cert-val royal" id="labMoistureIndex">— %</div>
+            </div>
+            <div class="lab-cert-item">
+              <div class="lab-cert-lbl">مؤشر قشور التملح السطحي</div>
+              <div class="lab-cert-val amber" id="labSalinityCrust">— %</div>
+            </div>
+            <div class="lab-cert-item">
+              <div class="lab-cert-lbl">مؤشر الكلوروفيل NDVI التقريبي</div>
+              <div class="lab-cert-val sage" id="labNdviProxy">—</div>
+            </div>
+            <div class="lab-cert-item">
+              <div class="lab-cert-lbl">مؤشر التصدع والتشققات الميكروية</div>
+              <div class="lab-cert-val" id="labCrackingScore">— / 10</div>
+            </div>
+            <div class="lab-cert-item full-width">
+              <div class="lab-cert-lbl">التشخيص النسيجي والجيوكيميائي الدقيق</div>
+              <div class="lab-cert-desc" id="labAnatomicalProfile">—</div>
+              <div class="lab-cert-desc mt-6" id="labPathology" style="color:#B45309;">—</div>
+            </div>
+            <div class="lab-cert-item full-width">
+              <div class="lab-cert-lbl" style="color:var(--sage);">البروتوكول العلاجي والتوصيات الحقلية</div>
+              <div class="lab-cert-desc treatment" id="labRemediation">—</div>
+            </div>
+          </div>
+
+          <!-- Differential Hypotheses (Summing to 100%) -->
+          <div class="diff-hypo-container mt-16">
+            <div style="font-size:12px; font-weight:700; color:var(--royal); margin-bottom:8px;">
+              الفرضيات التشخيصية التفريقية (Differential Hypotheses - 100% Attribution):
+            </div>
+            <div id="labHypothesesList" class="diff-hypo-list">
+              <div id="diffHypothesesList">
+                <div style="font-size:11.5px; color:var(--text-muted); font-style:italic;">في انتظار الفحص المخبري لحساب الفرضيات التفريقية...</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Confirmatory Field Directive -->
+          <div class="field-directive-box mt-12" id="labFieldDirectiveBox" style="background:rgba(217, 119, 6, 0.08); border-right:4px solid #D97706; padding:10px 14px; border-radius:6px;">
+            <div style="font-size:11.5px; font-weight:700; color:#B45309; margin-bottom:4px;">
+              التوجيه الحقلي الحاسم للتحقق السريري (Confirmatory Field Directive):
+            </div>
+            <div id="labFieldDirective" style="font-size:12px; color:#92400E; line-height:1.55;">
+              —
+            </div>
+          </div>
+
+          <!-- Rhizosphere Biogeochemistry & Ion Lockout Mechanism -->
+          <div class="rhizosphere-mechanism-box mt-12" id="labRhizosphereBox" style="background:rgba(15, 23, 42, 0.04); border-right:4px solid #1E3A8A; padding:10px 14px; border-radius:6px;">
+            <div style="font-size:11.5px; font-weight:700; color:#1E3A8A; margin-bottom:4px;">
+              البيوجيوكيمياء الجذرية وديناميكا الجهد التناضحي (Rhizosphere Biogeochemistry &amp; Ion Lockout):
+            </div>
+            <div id="labRhizosphereMechanism" style="font-size:12px; color:#334155; line-height:1.55;">
+              —
+            </div>
+          </div>
+
+          <!-- 3-Phase Clinical Prescription Protocol -->
+          <div class="prescription-3phase-container mt-14">
+            <div style="font-size:12px; font-weight:700; color:var(--sage); margin-bottom:8px;">
+              بروتوكول الوصفة السريرية ثلاثي المراحل (Three-Phase Clinical Prescription):
+            </div>
+            <div id="labPrescription3Phase" class="prescription-phases-grid">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Institutional AI Telemetry Badge -->
+          <div id="labAiTelemetryBadge" class="ai-telemetry-badge mt-14" style="display:none;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vision Right Panel: Comprehensive Agronomic Clinical Report Container -->
+    <div class="side-panel">
+      <div class="card-25d" id="visionReportBox">
+        <div class="card-header">
+          <div class="card-icon royal">
+            <svg viewBox="0 0 24 24" fill="var(--royal)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+          </div>
+          <h3>تقرير التشخيص الزراعي السريري الشامل</h3>
+        </div>
+        <div class="card-body">
+          <!-- Loading state -->
+          <div id="visionLoading" class="hidden" style="text-align:center; padding:24px;">
+            <div class="loading-spinner" style="margin:0 auto; border-top-color:var(--royal);"></div>
+            <div style="margin-top:10px; font-size:11.5px; color:var(--text-muted);">جاري تشغيل محرك Groq Vision وعزل العينة الحقلية...</div>
+          </div>
+
+          <!-- Clinical Report Container -->
+          <div id="visionReportContent">
+            <!-- Initial placeholder message -->
+            <div id="visionReportEmpty" style="color:var(--text-muted); font-size:12px; line-height:1.6; padding:12px 0;">
+              قم برفع صورة نصل ورقي، شجرة كاملة، مسطح ثيل، أو تربة زراعية لتوليد التقرير السريري الكامل عبر Groq Vision LPU.
+            </div>
+
+            <!-- Report Sections -->
+            <div id="visionReportDetails" style="display:none; font-size:12px;">
+              <!-- Header Badge -->
+              <div style="background:var(--surface-sunken); padding:10px 12px; border-radius:8px; border-right:4px solid var(--royal); margin-bottom:12px;">
+                <div style="font-size:11px; color:var(--text-muted);" id="rep-sample-cat">نوع العينة: —</div>
+                <div style="font-weight:700; font-size:13.5px; color:var(--text); margin-top:2px;" id="rep-diag-title">—</div>
+                <div style="font-size:10.5px; color:var(--royal); margin-top:4px;" id="rep-engine-source">محرك: Groq Vision LPU</div>
+              </div>
+
+              <!-- Section 1: Visual Symptoms -->
+              <div style="margin-bottom:12px;">
+                <div style="font-weight:700; color:var(--royal); margin-bottom:4px;">
+                  1. الأعراض البصرية المرئية (Visual Symptoms):
+                </div>
+                <div id="rep-symptoms" style="color:var(--text); line-height:1.5; background:rgba(0,0,0,0.02); padding:8px; border-radius:6px;">—</div>
+              </div>
+
+              <!-- Section 2: Environmental Causes -->
+              <div style="margin-bottom:12px;">
+                <div style="font-weight:700; color:var(--royal); margin-bottom:4px;">
+                  2. الأسباب العلمية المتوقعة في بيئة العراق (Environmental Causes):
+                </div>
+                <div id="rep-causes" style="color:var(--text); line-height:1.5; background:rgba(0,0,0,0.02); padding:8px; border-radius:6px;">—</div>
+              </div>
+
+              <!-- Section 3: Treatment Protocol -->
+              <div style="margin-bottom:12px;">
+                <div style="font-weight:700; color:var(--sage); margin-bottom:4px;">
+                  3. بروتوكول العلاج والإحياء خطوة بخطوة (Treatment & Revival Protocol):
+                </div>
+                <div id="rep-treatment" style="color:var(--text); line-height:1.5; background:rgba(45,90,67,0.05); padding:8px; border-radius:6px; border:1px solid rgba(45,90,67,0.15);">—</div>
+              </div>
+
+              <!-- Section 4: Irrigation Prescription -->
+              <div style="margin-bottom:8px;">
+                <div style="font-weight:700; color:#0284C7; margin-bottom:4px;">
+                  4. برنامج الري الدقيق الموصى به (Irrigation Prescription):
+                </div>
+                <div id="rep-irrigation" style="color:var(--text); line-height:1.5; background:rgba(2,132,199,0.05); padding:8px; border-radius:6px; border:1px solid rgba(2,132,199,0.15);">—</div>
+                <div style="font-size:10.5px; color:var(--text-muted); margin-top:4px;" id="rep-water-savings">الوفر المائي المتوقع: ~38.5%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Interactive PhD Clinical Lab Investigator Console -->
+  <div class="card-25d mt-18" id="labInvestigatorConsole">
+    <div class="card-header">
+      <div class="card-icon royal">
+        <svg viewBox="0 0 24 24" fill="var(--royal)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/></svg>
+      </div>
+      <div>
+        <h3>منصة الاستشارة السريرية للمختبر الذكي</h3>
+        <div style="font-size:11px; color:var(--text-muted);">حوار سريري تحليلي مباشر مع المختبر الذكي حول العينة المفحوصة دون هلاوس</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <!-- Next directive banner -->
+      <div class="lab-next-directive-banner mb-12" id="labNextDirectiveBanner" style="background:#EFF6FF; border-right:4px solid #2563EB; padding:10px 14px; border-radius:6px; font-size:12px; color:#1E40AF; line-height:1.5;">
+        التوجيه السريري للمختبر الذكي: بانتظار فحص العينة لبدء الجلسة الاستشارية.
+      </div>
+
+      <!-- Consultation log -->
+      <div class="lab-consultation-log mb-12" id="labConsultationLog" style="max-height:260px; overflow-y:auto; background:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; padding:12px; display:flex; flex-direction:column; gap:8px;">
+        <div style="font-size:11.5px; color:#64748B; font-style:italic;">
+          سجل الاستشارات السريرية فارغ حالياً. يطرح المختبر الذكي سؤاله الافتتاحي فور اكتمال الفحص.
+        </div>
+      </div>
+
+      <!-- Consultation input row -->
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="labConsultInput" class="form-input" style="flex:1; font-size:12px; padding:8px 12px;" placeholder="اكتب استفسارك أو إجابتك للمختبر الذكي..." onkeydown="if(event.key==='Enter')sendLabConsultation();" />
+        <button id="btnSendLabConsult" class="btn-session-action primary" style="padding:8px 16px; font-size:12px;" onclick="sendLabConsultation()">
+          إرسال للمختبر الذكي
+        </button>
+      </div>
+    </div>
+  </div>
+</div><!-- /workspace-vision -->
+
+</main><!-- /mainContent -->
+
+
+<!-- ════════════════════════════════════════════════════════════
+     SCRIPTS (MapLibre GL JS + Chart.js + Dashboard Logic)
+════════════════════════════════════════════════════════════ -->
+<!-- MapLibre GL JS v4.7.1 -->
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<!-- Dashboard Logic -->
+<script src="/static/js/dashboard.js"></script>
+
+<!-- ════════════════════════════════════════════════════════════
+     ESP32 SETUP GUIDE MODAL
+════════════════════════════════════════════════════════════ -->
+<div id="esp32SetupModal" role="dialog" aria-modal="true" aria-labelledby="esp32ModalTitle"
+     style="display:none; position:fixed; inset:0; z-index:9999; background:rgba(15,23,42,0.72); backdrop-filter:blur(4px); overflow-y:auto; padding:24px 16px;">
+  <div style="max-width:780px; margin:0 auto; background:#fff; border-radius:14px; box-shadow:0 24px 64px rgba(0,0,0,0.28); overflow:hidden;">
+
+    <!-- Modal Header -->
+    <div style="background:linear-gradient(135deg,#1E3A8A 0%,#1D4ED8 100%); padding:20px 24px; display:flex; justify-content:space-between; align-items:center;">
+      <div>
+        <h2 id="esp32ModalTitle" style="color:#fff; font-size:17px; font-weight:700; margin:0;">
+          دليل ربط وإعداد جهاز ESP32 — حارس التربة الميداني
+        </h2>
+        <div style="color:#BFDBFE; font-size:12px; margin-top:4px;">ESP32 Capacitive Soil Moisture Sentinel — Hardware Setup Guide</div>
+      </div>
+      <button onclick="closeEsp32SetupModal()" aria-label="إغلاق" style="background:rgba(255,255,255,0.15); border:none; color:#fff; font-size:20px; width:34px; height:34px; border-radius:50%; cursor:pointer; display:flex; align-items:center; justify-content:center;">✕</button>
+    </div>
+
+    <!-- Modal Body -->
+    <div style="padding:24px; direction:rtl;">
+
+      <!-- Online-without-hardware notice -->
+      <div style="background:#F0FDF4; border:1px solid #86EFAC; border-radius:8px; padding:14px 16px; margin-bottom:20px; display:flex; gap:12px; align-items:flex-start;">
+        <span style="font-size:22px; line-height:1;">🌐</span>
+        <div>
+          <div style="font-weight:700; color:#14532D; font-size:13px; margin-bottom:3px;">المنظومة تعمل بالكامل بدون أجهزة مادية!</div>
+          <div style="color:#166534; font-size:12px; line-height:1.6;">
+            جميع ميزات المرصد الجغرافي (Open-Meteo، Copernicus CAMS، UHI/LST، LocationIQ)،
+            محرك 4D Diurnal Plume الفيزيائي، ووكلاء الذكاء الاصطناعي المتعدد (WHO 2021، الرؤية الحاسوبية، تحليل التربة)
+            تعمل عبر الإنترنت بشكل كامل دون الحاجة لأي أجهزة ESP32 أو مجسات.
+            جهاز ESP32 اختياري ويضيف قياس رطوبة التربة اللحظي الحقلي.
+          </div>
+        </div>
+      </div>
+
+      <!-- Wiring Diagram -->
+      <div style="margin-bottom:20px;">
+        <h3 style="font-size:14px; font-weight:700; color:#1E3A8A; margin:0 0 12px;">مخطط التوصيل الكهربائي (Wiring Diagram)</h3>
+        <div style="border:1px solid #E2E8F0; border-radius:10px; overflow:hidden; background:#F8FAFC; text-align:center;">
+          <img src="/static/images/esp32_wiring_diagram.jpg"
+               alt="ESP32 Capacitive Soil Moisture Sensor Wiring Diagram — 18650 Battery Shield V3 → ESP32 DevKit V1 → Sensor V1.2"
+               style="max-width:100%; height:auto; display:block; margin:0 auto;"
+               loading="lazy"
+               onerror="this.parentElement.innerHTML='<div style=\'padding:24px;color:#94A3B8;\'>تعذّر تحميل الصورة — تأكد من وجود الملف في static/images/esp32_wiring_diagram.jpg</div>'"/>
+        </div>
+        <div style="font-size:11px; color:#64748B; text-align:center; margin-top:6px;">
+          شكل 1 — توصيل درع البطارية 18650 V3 ← ESP32 DevKit V1 ← مجس رطوبة التربة السعوي V1.2
+        </div>
+      </div>
+
+      <!-- Pinout Table -->
+      <div style="margin-bottom:20px;">
+        <h3 style="font-size:14px; font-weight:700; color:#1E3A8A; margin:0 0 10px;">جدول التوصيلات (Pinout Table)</h3>
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:12.5px; direction:ltr; text-align:left;">
+            <thead>
+              <tr style="background:#1E3A8A; color:#fff;">
+                <th style="padding:8px 12px;">From</th>
+                <th style="padding:8px 12px;">Wire Color</th>
+                <th style="padding:8px 12px;">To</th>
+                <th style="padding:8px 12px;">Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr style="background:#F8FAFC;">
+                <td style="padding:7px 12px; border-bottom:1px solid #E2E8F0;"><strong>Battery Shield 5V</strong></td>
+                <td style="padding:7px 12px; border-bottom:1px solid #E2E8F0;"><span style="display:inline-block;width:14px;height:14px;background:#DC2626;border-radius:50%;vertical-align:middle;margin-left:6px;"></span> Red</td>
+                <td style="padding:7px 12px; border-bottom:1px solid #E2E8F0;"><strong>ESP32 5V</strong></td>
+                <td style="padding:7px 12px; border-bottom:1px solid #E2E8F0;">Main power supply</td>
+              </tr>
+              <tr>
+                <td style="padding:7px 12px; border-bottom:1px solid #E2E8F0;"><strong>Battery Shield GND</strong></td>
+                <td style="padding:7px 12px; border-bottom:1px solid #E2E8F0;"><span style="display:inline-block;width:14px;height:14px;background:#1F2937;border-radius:50%;vertical-align:middle;margin-left:6px;"></span> Black</td>
+                <td style="padding:7px 12px; border-bottom:1px solid #E2E8F0;"><strong>ESP32 GND</strong></td>
+                <td style="padding:7px 12px; border-bottom:1px solid #E2E8F0;">Common ground</td>
+              </tr>
+              <tr style="background:#F8FAFC;">
+                <td style="padding:7px 12px; border-bottom:1px solid #E2E8F0;"><strong>ESP32 3.3V</strong></td>
+                <td style="padding:7px 12px; border-bottom:1px solid #E2E8F0;"><span style="display:inline-block;width:14px;height:14px;background:#EA580C;border-radius:50%;vertical-align:middle;margin-left:6px;"></span> Orange</td>
+                <td style="padding:7px 12px; border-bottom:1px solid #E2E8F0;"><strong>Sensor VCC</strong></td>
+                <td style="padding:7px 12px; border-bottom:1px solid #E2E8F0;">3.3 V logic — do not use 5 V</td>
+              </tr>
+              <tr>
+                <td style="padding:7px 12px; border-bottom:1px solid #E2E8F0;"><strong>ESP32 GND</strong></td>
+                <td style="padding:7px 12px; border-bottom:1px solid #E2E8F0;"><span style="display:inline-block;width:14px;height:14px;background:#9CA3AF;border-radius:50%;vertical-align:middle;margin-left:6px;"></span> Gray</td>
+                <td style="padding:7px 12px; border-bottom:1px solid #E2E8F0;"><strong>Sensor GND</strong></td>
+                <td style="padding:7px 12px; border-bottom:1px solid #E2E8F0;">Sensor ground reference</td>
+              </tr>
+              <tr style="background:#F8FAFC;">
+                <td style="padding:7px 12px;"><strong>ESP32 GPIO 32</strong></td>
+                <td style="padding:7px 12px;"><span style="display:inline-block;width:14px;height:14px;background:#7C3AED;border-radius:50%;vertical-align:middle;margin-left:6px;"></span> Purple</td>
+                <td style="padding:7px 12px;"><strong>Sensor AOUT</strong></td>
+                <td style="padding:7px 12px;">Analog signal (ADC1_CH4)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Firmware Snippet -->
+      <div style="margin-bottom:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:8px;">
+          <h3 style="font-size:14px; font-weight:700; color:#1E3A8A; margin:0;">مقتطف الكود الجاهز للتحميل (firmware snippet)</h3>
+          <button onclick="copyEsp32FirmwareSnippet()" style="padding:5px 12px; font-size:11.5px; border-radius:5px; border:1px solid #3B82F6; background:#EFF6FF; color:#1D4ED8; cursor:pointer; font-weight:600;">📋 نسخ الكود</button>
+        </div>
+        <pre id="esp32FirmwareSnippet" style="background:#0F172A; color:#E2E8F0; padding:16px; border-radius:8px; font-size:11.5px; direction:ltr; text-align:left; overflow-x:auto; margin:0; line-height:1.6; white-space:pre-wrap;">// ── Wi-Fi Credentials (replace before flashing) ──────────────
+const char* WIFI_SSID     = "YOUR_WIFI_SSID";
+const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
+
+// ── EcoSensing AI Backend Endpoint ───────────────────────────
+// Auto-detect: same origin as the dashboard (window.location.origin)
+// Example: "http://192.168.1.100:8000/api/v1/esp32/push"
+const char* PUSH_ENDPOINT = "http://YOUR_SERVER_IP:8000/api/v1/esp32/push";
+//                                        ↑ replace with your server LAN IP
+
+// ── GPIO Pin ──────────────────────────────────────────────────
+const int SOIL_PIN = 32;  // GPIO 32 → Sensor AOUT (Purple wire)
+
+// Full firmware: firmware/EcoSensing_ESP32_WiFi_Soil_Sentinel.ino</pre>
+        <div id="esp32CopyStatus" style="font-size:11px; color:#059669; margin-top:4px; display:none;">✓ تم النسخ إلى الحافظة</div>
+      </div>
+
+      <!-- Calibration Commands -->
+      <div style="margin-bottom:20px;">
+        <h3 style="font-size:14px; font-weight:700; color:#1E3A8A; margin:0 0 10px;">أوامر المعايرة عبر Serial Monitor (115200 baud)</h3>
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <div style="flex:1; min-width:200px; background:#FEF3C7; border:1px solid #FCD34D; border-radius:8px; padding:12px;">
+            <div style="font-family:monospace; font-size:14px; font-weight:700; color:#92400E; direction:ltr;">CAL_DRY</div>
+            <div style="font-size:11.5px; color:#78350F; margin-top:4px;">أمسك المجس في الهواء الجاف، ثم أرسل هذا الأمر لتسجيل قيمة الجفاف الكاملة (baseline)</div>
+          </div>
+          <div style="flex:1; min-width:200px; background:#EFF6FF; border:1px solid #93C5FD; border-radius:8px; padding:12px;">
+            <div style="font-family:monospace; font-size:14px; font-weight:700; color:#1E40AF; direction:ltr;">CAL_WET</div>
+            <div style="font-size:11.5px; color:#1E3A8A; margin-top:4px;">اغمر طرف المجس في الماء النظيف، ثم أرسل هذا الأمر لتسجيل قيمة التشبع الكامل</div>
+          </div>
+          <div style="flex:1; min-width:200px; background:#F0FDF4; border:1px solid #86EFAC; border-radius:8px; padding:12px;">
+            <div style="font-family:monospace; font-size:14px; font-weight:700; color:#14532D; direction:ltr;">115200 baud</div>
+            <div style="font-size:11.5px; color:#166534; margin-top:4px;">افتح Serial Monitor في Arduino IDE على هذه السرعة لرؤية بيانات JSON الحية من المجس</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div style="border-top:1px solid #E2E8F0; padding-top:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+        <div style="font-size:11px; color:#94A3B8; direction:ltr; text-align:left;">
+          EcoSensing AI — EcoTech AI Green Innovation Hackathon (16-11-2026)<br/>
+          Middle Technical University — Polytechnic College
+        </div>
+        <button onclick="closeEsp32SetupModal()" style="padding:8px 20px; font-size:13px; font-weight:600; border-radius:6px; border:none; background:#1E3A8A; color:#fff; cursor:pointer;">إغلاق</button>
+      </div>
+
+    </div><!-- /modal body -->
+  </div><!-- /modal container -->
+</div><!-- /esp32SetupModal -->
+
+</body>
+</html>
